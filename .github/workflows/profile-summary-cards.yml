@@ -1,0 +1,32 @@
+name: GitHub-Profile-Summary-Cards
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: generate-github-profile-summary-cards
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: vn7n24fzkq/github-profile-summary-cards@release
+        env:
+          GITHUB_TOKEN: ${{ secrets.SUMMARY_GITHUB_TOKEN }}
+        with:
+          USERNAME: ${{ github.repository_owner }}
+
+      - name: Recolor to guinda
+        continue-on-error: true
+        run: |
+          git pull --rebase
+          sed -i -e 's/fe428e/A4133C/gI' -e 's/a9fef7/F2D0D9/gI' -e 's/f8d847/C2185B/gI' profile-summary-card-output/radical/*.svg
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add profile-summary-card-output
+          git commit -m "style: guinda theme" || true
+          git push
